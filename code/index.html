@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>WorkMate Pet</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #F5F5DC;
+      color: #333;
+      text-align: center;
+      overflow: hidden; 
+      user-select: none; 
+      -webkit-app-region: drag; 
+    }
+
+    /* 상단 메뉴바 */
+    .titlebar {
+      height: 30px;
+      background: #8B4513;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      -webkit-app-region: drag;
+    }
+
+    .titlebar-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #F5F5DC; 
+    }
+
+    .titlebar-buttons {
+      display: flex;
+      gap: 5px;
+      -webkit-app-region: no-drag; 
+    }
+
+    .titlebar-button {
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .minimize-btn {
+      background: #F5F5DC;
+      color: #8B4513;
+    }
+
+    .minimize-btn:hover {
+      background: #E6E6D4;
+    }
+
+    .close-btn {
+      background: #F5F5DC;
+      color: #8B4513;
+    }
+
+    .close-btn:hover {
+      background: #E6E6D4;
+    }
+
+    /* 나머지 컨텐츠 */
+    .content {
+      padding: 5px;
+      -webkit-app-region: no-drag;
+    }
+
+    .timer {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      color: #333;
+    }
+
+    .pet-container {
+      width: 200px;
+      height: 200px;
+      margin: 10px auto;
+      background: rgba(139, 69, 19, 0.1);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    /* 불꽃 이펙트 */
+    .pet-container.fire-effect::before {
+      content: '🔥';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+    }
+
+    @keyframes fireFlicker {
+      0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.7; transform: translateX(-50%) scale(1.1); }
+    }
+
+    .pet-container:hover {
+      transform: scale(1.1);
+    }
+
+    .pet-container:active {
+      transform: scale(0.95);
+    }
+
+    .exp-bar {
+      width: 80%;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      margin: 10px auto;
+      overflow: hidden;
+    }
+
+    .exp-fill {
+      height: 100%;
+      background: #4CAF50;
+      width: 30%;
+      transition: width 0.3s;
+    }
+
+    .level {
+      font-size: 18px;
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      background: #8B4513;
+      color: #F5F5DC;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #A0522D;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* 알림 스타일 */
+    .notification {
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      padding: 15px 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .status {
+  font-size: 14px;
+  margin: 10px 0;
+  padding: 5px 15px;
+  background: rgba(139, 69, 19, 0.2);
+  border-radius: 15px;
+  display: inline-block;
+  color: #333;
+}
+
+.status.active {
+  background: rgba(139, 69, 19, 0.4);
+  animation: pulse 1.5s infinite;
+  color: #8B4513;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.selected-programs {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* 모달 스타일 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-app-region: no-drag;
+}
+
+.modal-content {
+  background: white;
+  color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  width: 320px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.program-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 15px 0;
+}
+
+.program-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin: 5px 0;
+  background: #f5f5f5;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.program-item:hover {
+  background: #e0e0e0;
+}
+
+.program-item input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.modal-buttons button {
+  padding: 8px 20px;
+}
+
+.program-item label {
+  flex: 1;
+  padding: 5px;
+}
+
+/* 캐릭터 관리 화면 */
+.management-screen {
+  display: none;
+  padding: 0;
+  position: relative;
+}
+
+.management-screen.active {
+  display: block;
+}
+
+.back-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #8B4513;
+  color: #F5F5DC;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 100;
+}
+
+.back-button:hover {
+  background: #A0522D;
+}
+  </style>
+</head>
+<body>
+  <!-- 커스텀 타이틀바 -->
+  <div class="titlebar">
+    <div class="titlebar-title"> WorkMate Pet</div>
+    <div class="titlebar-buttons">
+      <button class="titlebar-button minimize-btn" onclick="minimizeWindow()">─</button>
+      <button class="titlebar-button close-btn" onclick="closeWindow()">✕</button>
+    </div>
+  </div>
+
+  <!-- 메인 컨텐츠 -->
+  <div class="content" id="mainContent">
+    <div class="timer" id="timer">00:00:00</div>
+    
+    <div class="pet-container" id="pet" onclick="petClick()">
+      🐱
+    </div>
+    
+    <div class="level" id="level">Level 1</div>
+    
+    <div class="exp-bar">
+      <div class="exp-fill" id="expBar"></div>
+    </div>
+    
+    <div class="status" id="status">Waiting...</div>
+    
+    <div class="selected-programs" id="selectedPrograms">No programs selected</div>
+    
+    <div class="controls">
+      <button onclick="selectProgram()">Select Program</button>
+      <button onclick="togglePetRoaming()" id="roamingBtn">Enable Roaming</button>
+      <button onclick="openPetManagement()">My Pet</button>
+    </div>
+  </div>
+
+  <!-- 캐릭터 관리 화면 -->
+  <div class="content management-screen" id="managementScreen">
+    <button class="back-button" onclick="closePetManagement()">← </button>
+  </div>
+
+  <!-- 프로그램 선택 모달 -->
+  <div class="modal" id="programModal" style="display: none;">
+    <div class="modal-content">
+      <h2>Select Work Programs</h2>
+      <div class="program-list" id="programList"></div>
+      <div class="modal-buttons">
+        <button onclick="closeProgramSelector()">Cancel</button>
+        <button onclick="saveSelectedPrograms()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 커스텀 알림 -->
+  <div class="notification" id="notification"></div>
+
+
+  <script>
+  const { ipcRenderer } = require('electron');
+  
+  let seconds = 0;
+  let isMonitoring = false;
+  let exp = 0;
+  let level = 1;
+  let selectedPrograms = [];
+  let availablePrograms = [];
+  let currentActiveProgram = '';
+  let isRoaming = false;
+  let encouragementInterval = null;
+  let continuousWorkTime = 0;
+  let fireEffectInterval = null;
+  let isCurrentlyActive = false;
+
+  // 창 제어
+  function closeWindow() {
+    ipcRenderer.send('window-close');
+  }
+
+  function minimizeWindow() {
+    ipcRenderer.send('window-minimize');
+  }
+
+  // 알림
+  function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.style.display = 'block';
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 2000);
+  }
+
+  // 타이머 업데이트
+  function updateTimer() {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    document.getElementById('timer').textContent = 
+      `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  // 경험치 업데이트
+  function updateExp() {
+    const expForLevel = level * 100;
+    const progress = (exp % expForLevel) / expForLevel * 100;
+    document.getElementById('expBar').style.width = progress + '%';
+    
+    if (exp >= expForLevel * level) {
+      level++;
+      document.getElementById('level').textContent = 'Level ' + level;
+      showNotification('🎉 Level Up! Current Level: ' + level);
+      
+      const pets = ['🐱', '🐶', '🐼', '🦊', '🐯'];
+      document.getElementById('pet').textContent = pets[Math.min(level - 1, pets.length - 1)];
+    }
+  }
+
+  // 저장된 프로그램 불러오기
+  ipcRenderer.on('load-selected-programs', (event, programs) => {
+    selectedPrograms = programs;
+    updateSelectedProgramsDisplay();
+  });
+
+  // 선택된 프로그램 표시 업데이트
+  function updateSelectedProgramsDisplay() {
+    const el = document.getElementById('selectedPrograms');
+    if (selectedPrograms.length === 0) {
+      el.textContent = 'No programs selected';
+    } else {
+      el.textContent = 'Selected: ' + selectedPrograms.map(p => p.replace('.exe', '')).join(', ');
+    }
+  }
+
+  // 프로그램 선택
+  function selectProgram() {
+    openProgramSelector();
+  }
+
+  // 시메지 활성화/비활성화
+  function togglePetRoaming() {
+    isRoaming = !isRoaming;
+    const btn = document.getElementById('roamingBtn');
+    const petEmoji = document.getElementById('pet').textContent;
+    
+    if (isRoaming) {
+      ipcRenderer.send('toggle-roaming', true, petEmoji);
+      btn.textContent = 'Stop Roaming';
+      showNotification('Roaming started!');
+    } else {
+      ipcRenderer.send('toggle-roaming', false);
+      btn.textContent = 'Start Roaming';
+      showNotification('Roaming stopped.');
+    }
+  }
+
+  // 캐릭터 관리 화면 열기
+  function openPetManagement() {
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('managementScreen').classList.add('active');
+  }
+
+  // 캐릭터 관리 화면 닫기
+  function closePetManagement() {
+    document.getElementById('managementScreen').classList.remove('active');
+    document.getElementById('mainContent').style.display = 'block';
+  }
+
+  // 타이머 틱 수신
+  ipcRenderer.on('timer-tick', (event, isActive, programName) => {
+    const statusEl = document.getElementById('status');
+    const petContainer = document.getElementById('pet');
+    currentActiveProgram = programName;
+    isCurrentlyActive = isActive;
+    
+    if (isActive) {
+      seconds++;
+      exp++; // 경험치 증가
+      continuousWorkTime++; // 연속 작업 시간 증가
+      updateTimer();
+      updateExp(); // 경험치 게이지 업데이트
+      statusEl.textContent = `Working 🔥 (${programName})`;
+      statusEl.classList.add('active');
+      
+      // 10초 이상 연속 작업 시 불타는 이펙트
+      if (continuousWorkTime >= 10) {
+        petContainer.classList.add('fire-effect');
+      }
+      
+      // 응원 메시지 시작 (10초마다)
+      if (!encouragementInterval) {
+        encouragementInterval = setInterval(() => {
+          if (isCurrentlyActive) {
+            const messages = [
+              'Keep it up!',
+              'You\'re doing great!',
+              'Keep going!',
+              'Awesome!',
+              'Nice!',
+              'You\'re the best!'
+            ];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            showNotification(randomMsg);
+          }
+        }, 10000); // 10초마다
+      }
+    } else {
+      continuousWorkTime = 0; // 작업 중지 시 리셋
+      petContainer.classList.remove('fire-effect'); // 불꽃 이펙트 제거
+      
+      // 응원 메시지 중지
+      if (encouragementInterval) {
+        clearInterval(encouragementInterval);
+        encouragementInterval = null;
+      }
+      
+      statusEl.textContent = `Waiting... (${programName || 'Switch to selected program'})`;
+      statusEl.classList.remove('active');
+    }
+  });
+
+  // 프로그램 선택 모달
+  async function openProgramSelector() {
+    document.getElementById('programModal').style.display = 'flex';
+    const listEl = document.getElementById('programList');
+    listEl.innerHTML = '<p>Loading programs...</p>';
+    
+    availablePrograms = await ipcRenderer.invoke('get-all-programs');
+    
+    listEl.innerHTML = '';
+    
+    if (availablePrograms.length === 0) {
+      listEl.innerHTML = '<p>No programs found.</p>';
+      return;
+    }
+    
+    availablePrograms.forEach(program => {
+      const item = document.createElement('div');
+      item.className = 'program-item';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = program;
+      checkbox.id = 'prog-' + program;
+      checkbox.checked = selectedPrograms.includes(program);
+      
+      const label = document.createElement('label');
+      label.htmlFor = 'prog-' + program;
+      label.textContent = program.replace('.exe', '');
+      label.style.cursor = 'pointer';
+      label.style.flex = '1';
+      
+      item.appendChild(checkbox);
+      item.appendChild(label);
+      
+      listEl.appendChild(item);
+    });
+  }
+
+  function closeProgramSelector() {
+    document.getElementById('programModal').style.display = 'none';
+  }
+
+  function saveSelectedPrograms() {
+    const checkboxes = document.querySelectorAll('.program-item input[type="checkbox"]:checked');
+    selectedPrograms = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedPrograms.length === 0) {
+      showNotification('Please select at least one program!');
+      return;
+    }
+    
+    ipcRenderer.send('set-selected-programs', selectedPrograms);
+    updateSelectedProgramsDisplay();
+    
+    closeProgramSelector();
+    showNotification(`${selectedPrograms.length} program(s) selected!`);
+    
+    // 프로그램 선택 시 자동으로 모니터링 시작
+    if (!isMonitoring) {
+      isMonitoring = true;
+      ipcRenderer.send('start-monitoring');
+      showNotification('Monitoring started automatically!');
+    }
+  }
+
+  function petClick() {
+    const messages = ['Meow', 'Keep working hard!', 'You\'re doing great!'];
+    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+    showNotification(randomMsg);
+    
+    // 펫 애니메이션
+    const pet = document.getElementById('pet');
+    pet.style.transform = 'scale(1.2) rotate(5deg)';
+    setTimeout(() => {
+      pet.style.transform = 'scale(1)';
+    }, 200);
+  }
+
+  // 모달 외부 클릭 시 닫기
+  document.getElementById('programModal').addEventListener('click', (e) => {
+    if (e.target.id === 'programModal') {
+      closeProgramSelector();
+    }
+  });
+
+  // 초기화
+  updateTimer();
+  updateSelectedProgramsDisplay();
+</script>
+</body>
+</html>
