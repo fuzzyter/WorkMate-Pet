@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "build:win": "electron-builder --win",
+    "build:win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
     "dist": "electron-builder --publish=never",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,19 +27,29 @@
       "**/*",
       "!node_modules/**/*",
       "!dist",
-      "!*.md"
+      "!*.md",
+      "asset/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/electron-store/**/*",
+      "**/node_modules/uiohook-napi/**/*",
+      "**/node_modules/active-win/**/*"
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32"
+            "x64"
           ]
         }
       ],
-      "icon": "build/icon.ico"
+      "sign": false,
+      "signingHashAlgorithms": [],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "oneClick": false,
@@ -49,6 +59,7 @@
     }
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "electron": "^39.0.0",
     "electron-builder": "^24.13.3"
   },

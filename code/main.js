@@ -330,7 +330,7 @@ function createRoamingWindow(petEmoji) {
       webSecurity: false
     }
   });
-  const imagePath = path.join(__dirname, '..', 'asset', 'img', 'cat-walk1.png');
+  const imagePath = path.join(__dirname, 'asset', 'img', 'cat-walk1.png');
   let imageUrl;
   if (process.platform === 'win32') {
     imageUrl = 'file:///' + imagePath.replace(/\\/g, '/');

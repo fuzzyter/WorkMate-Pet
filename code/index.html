@@ -462,7 +462,7 @@
     <div class="timer" id="timer">00:00:00</div>
     
     <div class="pet-container" id="pet" onclick="petClick()">
-      <img id="petImage" src="../asset/img/cat-sleep.png" alt="Pet">
+      <img id="petImage" src="asset/img/cat-sleep.png" alt="Pet">
     </div>
     
     <div class="level" id="level">Level 1</div>
@@ -512,7 +512,7 @@
     <div class="pet-grid" id="petGrid">
 
       <div class="pet-slot active" onclick="selectPet(0)">
-        <img src="../asset/img/cat-icon.png" alt="Pet Icon" style="width: 100%; height: 100%; object-fit: contain;">
+        <img src="asset/img/cat-icon.png" alt="Pet Icon" style="width: 100%; height: 100%; object-fit: contain;">
       </div>
       <div class="pet-slot disabled" onclick="showComingSoon()"></div>
       <div class="pet-slot disabled" onclick="showComingSoon()"></div>
@@ -528,7 +528,7 @@
     <!-- 펫 상세 정보 -->
     <div class="pet-detail" id="petDetail" style="display: none;">
       <div class="pet-detail-emoji" id="petDetailEmoji">
-        <img src="../asset/img/cat-basic.png" alt="Pet" style="width: 100%; height: 100%; object-fit: contain;">
+        <img src="asset/img/cat-basic.png" alt="Pet" style="width: 100%; height: 100%; object-fit: contain;">
       </div>
       <div class="pet-detail-info">
         <div><strong>Level:</strong> <span id="petDetailLevel">1</span></div>
@@ -585,22 +585,22 @@
       currentPetState = 'click';
     }
     
-    let imagePath = '../asset/img/cat-sleep.png';
+    let imagePath = 'asset/img/cat-sleep.png';
     switch(state) {
       case 'sleep':
-        imagePath = '../asset/img/cat-sleep.png';
+        imagePath = 'asset/img/cat-sleep.png';
         break;
       case 'basic':
-        imagePath = '../asset/img/cat-basic.png';
+        imagePath = 'asset/img/cat-basic.png';
         break;
       case 'burn':
-        imagePath = '../asset/img/cat-burn.png';
+        imagePath = 'asset/img/cat-burn.png';
         break;
       case 'cheer':
-        imagePath = '../asset/img/cat-cheer.png';
+        imagePath = 'asset/img/cat-cheer.png';
         break;
       case 'click':
-        imagePath = '../asset/img/cat-click.png';
+        imagePath = 'asset/img/cat-click.png';
         break;
     }
     
@@ -752,7 +752,7 @@
     
     if (!emojiEl || !levelEl || !timeEl) return;
   
-    emojiEl.innerHTML = '<img src="../asset/img/cat-basic.png" alt="Pet" style="width: 100%; height: 100%; object-fit: contain;">';
+    emojiEl.innerHTML = '<img src="asset/img/cat-basic.png" alt="Pet" style="width: 100%; height: 100%; object-fit: contain;">';
     
     // 레벨 설정
     levelEl.textContent = level;
@@ -814,12 +814,12 @@
             updatePetImage('cheer');
             if (cheerTimeout) clearTimeout(cheerTimeout);
             cheerTimeout = setTimeout(() => {
-              // 응원 상태 해제
-              currentPetState = '';
-              // 응원 이미지가 끝난 후 상태 복귀
+              // 응원 상태 해제 후 상태 복귀
               if (continuousWorkTime >= 15) {
+                currentPetState = 'burn';
                 updatePetImage('burn');
               } else {
+                currentPetState = 'basic';
                 updatePetImage('basic');
               }
             }, 2000);
