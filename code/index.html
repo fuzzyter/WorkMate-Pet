@@ -20,7 +20,7 @@
       -webkit-app-region: drag; 
     }
 
-    /* 상단 메뉴바 */
+    /* 메뉴바 */
     .titlebar {
       height: 30px;
       background: #8B4513;
@@ -73,8 +73,6 @@
     .close-btn:hover {
       background: #E6E6D4;
     }
-
-    /* 나머지 컨텐츠 */
     .content {
       padding: 5px;
       -webkit-app-region: no-drag;
@@ -97,10 +95,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 80px;
       cursor: pointer;
       transition: transform 0.2s;
       position: relative;
+      overflow: hidden;
+    }
+
+    .pet-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     /* 불꽃 이펙트 */
@@ -136,8 +140,45 @@
     .exp-fill {
       height: 100%;
       background: #4CAF50;
-      width: 30%;
+      width: 0%;
       transition: width 0.3s;
+    }
+
+    /* 상태 게이지 */
+    .status-bars-container {
+      width: 80%;
+      margin: 10px auto;
+      display: flex;
+      gap: 5px;
+      justify-content: space-between;
+    }
+
+    .status-bar-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .status-bar {
+      width: 100%;
+      height: 6.67px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3.33px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+
+    .status-bar-fill {
+      height: 100%;
+      background: #DC143C;
+      width: 100%;
+    }
+
+    .status-bar-label {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
     }
 
     .level {
@@ -324,10 +365,91 @@
 .back-button:hover {
   background: #A0522D;
 }
+
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+  padding: 60px 20px 20px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.pet-slot {
+  aspect-ratio: 1;
+  background: rgba(139, 69, 19, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  overflow: hidden;
+}
+
+.pet-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pet-slot.active {
+  background: rgba(139, 69, 19, 0.4);
+  border-color: #8B4513;
+  transform: scale(1.05);
+}
+
+.pet-slot.disabled {
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.pet-slot:hover:not(.disabled) {
+  background: rgba(139, 69, 19, 0.5);
+  transform: scale(1.05);
+}
+
+/* 펫 상세 정보 */
+.pet-detail {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(139, 69, 19, 0.1);
+  border-radius: 15px;
+  text-align: center;
+}
+
+.pet-detail-emoji {
+  font-size: 80px;
+  margin-bottom: 15px;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 15px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-detail-emoji img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pet-detail-info {
+  color: #333;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.pet-detail-info strong {
+  color: #8B4513;
+}
   </style>
 </head>
 <body>
-  <!-- 커스텀 타이틀바 -->
   <div class="titlebar">
     <div class="titlebar-title"> WorkMate Pet</div>
     <div class="titlebar-buttons">
@@ -336,18 +458,39 @@
     </div>
   </div>
 
-  <!-- 메인 컨텐츠 -->
   <div class="content" id="mainContent">
     <div class="timer" id="timer">00:00:00</div>
     
     <div class="pet-container" id="pet" onclick="petClick()">
-      🐱
+      <img id="petImage" src="../asset/img/cat-sleep.png" alt="Pet">
     </div>
     
     <div class="level" id="level">Level 1</div>
     
     <div class="exp-bar">
       <div class="exp-fill" id="expBar"></div>
+    </div>
+    
+    <!-- 상태 게이지 -->
+    <div class="status-bars-container">
+      <div class="status-bar-wrapper">
+        <div class="status-bar">
+          <div class="status-bar-fill"></div>
+        </div>
+        <div class="status-bar-label">Hygiene</div>
+      </div>
+      <div class="status-bar-wrapper">
+        <div class="status-bar">
+          <div class="status-bar-fill"></div>
+        </div>
+        <div class="status-bar-label">Hunger</div>
+      </div>
+      <div class="status-bar-wrapper">
+        <div class="status-bar">
+          <div class="status-bar-fill"></div>
+        </div>
+        <div class="status-bar-label">Happiness</div>
+      </div>
     </div>
     
     <div class="status" id="status">Waiting...</div>
@@ -363,10 +506,36 @@
 
   <!-- 캐릭터 관리 화면 -->
   <div class="content management-screen" id="managementScreen">
-    <button class="back-button" onclick="closePetManagement()">← </button>
-  </div>
+    <button class="back-button" onclick="closePetManagement()">← Back</button>
+    
+    <!-- 펫 선택 -->
+    <div class="pet-grid" id="petGrid">
 
-  <!-- 프로그램 선택 모달 -->
+      <div class="pet-slot active" onclick="selectPet(0)">
+        <img src="../asset/img/cat-icon.png" alt="Pet Icon" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+      <div class="pet-slot disabled" onclick="showComingSoon()"></div>
+    </div>
+    
+    <!-- 펫 상세 정보 -->
+    <div class="pet-detail" id="petDetail" style="display: none;">
+      <div class="pet-detail-emoji" id="petDetailEmoji">
+        <img src="../asset/img/cat-basic.png" alt="Pet" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <div class="pet-detail-info">
+        <div><strong>Level:</strong> <span id="petDetailLevel">1</span></div>
+        <div><strong>Work Time:</strong> <span id="petDetailTime">00:00:00</span></div>
+      </div>
+    </div>
+  </div>
   <div class="modal" id="programModal" style="display: none;">
     <div class="modal-content">
       <h2>Select Work Programs</h2>
@@ -378,7 +547,6 @@
     </div>
   </div>
 
-  <!-- 커스텀 알림 -->
   <div class="notification" id="notification"></div>
 
 
@@ -397,6 +565,47 @@
   let continuousWorkTime = 0;
   let fireEffectInterval = null;
   let isCurrentlyActive = false;
+  let currentPetState = 'sleep'; 
+  let clickTimeout = null;
+  let cheerTimeout = null;
+
+  // 펫 이미지 변경
+  function updatePetImage(state) {
+    const petImage = document.getElementById('petImage');
+    if (!petImage) return;
+    if (currentPetState === 'cheer' && state !== 'cheer') {
+      return;
+    }
+    
+    if (state !== 'click' && state !== 'cheer') {
+      currentPetState = state;
+    } else if (state === 'cheer') {
+      currentPetState = 'cheer';
+    } else if (state === 'click') {
+      currentPetState = 'click';
+    }
+    
+    let imagePath = '../asset/img/cat-sleep.png';
+    switch(state) {
+      case 'sleep':
+        imagePath = '../asset/img/cat-sleep.png';
+        break;
+      case 'basic':
+        imagePath = '../asset/img/cat-basic.png';
+        break;
+      case 'burn':
+        imagePath = '../asset/img/cat-burn.png';
+        break;
+      case 'cheer':
+        imagePath = '../asset/img/cat-cheer.png';
+        break;
+      case 'click':
+        imagePath = '../asset/img/cat-click.png';
+        break;
+    }
+    
+    petImage.src = imagePath;
+  }
 
   // 창 제어
   function closeWindow() {
@@ -425,6 +634,9 @@
     
     document.getElementById('timer').textContent = 
       `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    
+    // 펫 상세 정보 시간도 업데이트
+    updatePetDetailTime();
   }
 
   // 경험치 업데이트
@@ -438,8 +650,8 @@
       document.getElementById('level').textContent = 'Level ' + level;
       showNotification('🎉 Level Up! Current Level: ' + level);
       
-      const pets = ['🐱', '🐶', '🐼', '🦊', '🐯'];
-      document.getElementById('pet').textContent = pets[Math.min(level - 1, pets.length - 1)];
+      // 펫 상세 정보 업데이트
+      updatePetDetailTime();
     }
   }
 
@@ -481,16 +693,78 @@
     }
   }
 
-  // 캐릭터 관리 화면 열기
+  // 캐릭터 관리 화면
   function openPetManagement() {
     document.getElementById('mainContent').style.display = 'none';
     document.getElementById('managementScreen').classList.add('active');
+    
+    // 첫 번째 펫을 기본으로 선택
+    selectPet(0);
   }
 
-  // 캐릭터 관리 화면 닫기
   function closePetManagement() {
     document.getElementById('managementScreen').classList.remove('active');
     document.getElementById('mainContent').style.display = 'block';
+  }
+
+  // 펫 선택
+  function selectPet(index) {
+    const slots = document.querySelectorAll('.pet-slot');
+    slots.forEach(slot => slot.classList.remove('active'));
+    
+    if (slots[index] && !slots[index].classList.contains('disabled')) {
+      slots[index].classList.add('active');
+      
+      // 펫 상세 정보 업데이트
+      updatePetDetail();
+    }
+  }
+ // 비활성화 슬롯 메세지
+  function showComingSoon() {
+    showNotification('Coming soon!');
+  }
+
+  // 펫 상세 정보 시간
+  function updatePetDetailTime() {
+    const detailDiv = document.getElementById('petDetail');
+    if (detailDiv && detailDiv.style.display !== 'none') {
+      const timeEl = document.getElementById('petDetailTime');
+      if (timeEl) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        timeEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+      
+      const levelEl = document.getElementById('petDetailLevel');
+      if (levelEl) {
+        levelEl.textContent = level;
+      }
+    }
+  }
+
+  // 펫 상세 정보 업데이트
+  function updatePetDetail() {
+    const detailDiv = document.getElementById('petDetail');
+    const emojiEl = document.getElementById('petDetailEmoji');
+    const levelEl = document.getElementById('petDetailLevel');
+    const timeEl = document.getElementById('petDetailTime');
+    
+    if (!emojiEl || !levelEl || !timeEl) return;
+  
+    emojiEl.innerHTML = '<img src="../asset/img/cat-basic.png" alt="Pet" style="width: 100%; height: 100%; object-fit: contain;">';
+    
+    // 레벨 설정
+    levelEl.textContent = level;
+    
+    // 일한 시간 설정
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    timeEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    
+    // 상세 정보 표시
+    detailDiv.style.display = 'block';
   }
 
   // 타이머 틱 수신
@@ -509,12 +783,19 @@
       statusEl.textContent = `Working 🔥 (${programName})`;
       statusEl.classList.add('active');
       
-      // 10초 이상 연속 작업 시 불타는 이펙트
-      if (continuousWorkTime >= 10) {
+      // 15초 이상 연속 작업 시 불타는 이펙트
+      if (continuousWorkTime >= 15) {
         petContainer.classList.add('fire-effect');
+        if (currentPetState !== 'cheer' && currentPetState !== 'click') {
+          updatePetImage('burn');
+        }
+      } else {
+        if (currentPetState !== 'cheer' && currentPetState !== 'click') {
+          updatePetImage('basic');
+        }
       }
       
-      // 응원 메시지 시작 (10초마다)
+      // 응원 메시지(10초마다)
       if (!encouragementInterval) {
         encouragementInterval = setInterval(() => {
           if (isCurrentlyActive) {
@@ -528,17 +809,36 @@
             ];
             const randomMsg = messages[Math.floor(Math.random() * messages.length)];
             showNotification(randomMsg);
+            
+            // 응원 이미지(2초)
+            updatePetImage('cheer');
+            if (cheerTimeout) clearTimeout(cheerTimeout);
+            cheerTimeout = setTimeout(() => {
+              // 응원 상태 해제
+              currentPetState = '';
+              // 응원 이미지가 끝난 후 상태 복귀
+              if (continuousWorkTime >= 15) {
+                updatePetImage('burn');
+              } else {
+                updatePetImage('basic');
+              }
+            }, 2000);
           }
         }, 10000); // 10초마다
       }
     } else {
       continuousWorkTime = 0; // 작업 중지 시 리셋
-      petContainer.classList.remove('fire-effect'); // 불꽃 이펙트 제거
+      petContainer.classList.remove('fire-effect'); 
+      updatePetImage('sleep'); // 작업 안 할 때는 sleep
       
       // 응원 메시지 중지
       if (encouragementInterval) {
         clearInterval(encouragementInterval);
         encouragementInterval = null;
+      }
+      if (cheerTimeout) {
+        clearTimeout(cheerTimeout);
+        cheerTimeout = null;
       }
       
       statusEl.textContent = `Waiting... (${programName || 'Switch to selected program'})`;
@@ -616,7 +916,22 @@
     const randomMsg = messages[Math.floor(Math.random() * messages.length)];
     showNotification(randomMsg);
     
-    // 펫 애니메이션
+    // 클릭 이미지 표시 (1초간)
+    updatePetImage('click');
+    if (clickTimeout) clearTimeout(clickTimeout);
+    clickTimeout = setTimeout(() => {
+      // 원래 상태로 복귀
+      if (isCurrentlyActive) {
+        if (continuousWorkTime >= 15) {
+          updatePetImage('burn');
+        } else {
+          updatePetImage('basic');
+        }
+      } else {
+        updatePetImage('sleep');
+      }
+    }, 1000);
+    
     const pet = document.getElementById('pet');
     pet.style.transform = 'scale(1.2) rotate(5deg)';
     setTimeout(() => {
@@ -624,7 +939,6 @@
     }, 200);
   }
 
-  // 모달 외부 클릭 시 닫기
   document.getElementById('programModal').addEventListener('click', (e) => {
     if (e.target.id === 'programModal') {
       closeProgramSelector();
@@ -634,6 +948,8 @@
   // 초기화
   updateTimer();
   updateSelectedProgramsDisplay();
+  // 경험치 게이지 초기값을 0%로
+  document.getElementById('expBar').style.width = '0%';
 </script>
 </body>
 </html>

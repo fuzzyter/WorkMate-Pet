@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const Store = require('electron-store');
+const path = require('path');
 
 let activeWin;
 
@@ -137,21 +138,13 @@ function createWindow() {
 function getDefaultPrograms() {
   return [
     'chrome.exe',
-    'firefox.exe',
-    'msedge.exe',
-    'Code.exe',
-    'notepad++.exe',
-    'Notion.exe',
+    'notepad.exe',
     'slack.exe',
     'discord.exe',
     'EXCEL.EXE',
-    'WINWORD.EXE',
-    'POWERPNT.EXE',
     'Photoshop.exe',
     'Illustrator.exe',
     'figma.exe',
-    'obs64.exe',
-    'Spotify.exe'
   ];
 }
 
@@ -162,9 +155,8 @@ function startMonitoring() {
   isMonitoring = true;
   isUserActive = false;
   
-  console.log('모니터링 시작!');
+  console.log('모니터링 시작');
   
-  // uiohook-napi 로드
   try {
     const uiohookModule = require('uiohook-napi');
     uIOhook = uiohookModule.uIOhook || uiohookModule.default || uiohookModule;
@@ -186,14 +178,13 @@ function startMonitoring() {
       });
       
       uIOhook.start();
-      console.log('uIOhook 시작됨! (키보드/마우스 입력 감지 활성화)');
+      console.log('uIOhook 키보드/마우스 입력 감지 활성화)');
     } else {
-      console.log('uIOhook 모듈을 찾을 수 없거나 올바르지 않습니다.');
+      console.log('uIOhook 오류');
       isUserActive = true;
     }
   } catch (error) {
-    console.log('uIOhook 없음, 기본 모드로 전환:', error.message);
-    // uIOhook 없으면 프로그램 활성화만으로 판단
+    console.log('uIOhook 없음', error.message);
     isUserActive = true;
   }
   
@@ -201,7 +192,7 @@ function startMonitoring() {
   monitoringInterval = setInterval(async () => {
     try {
       if (!activeWin) {
-        console.log('active-win이 아직 로드되지 않음');
+        console.log('active-win 오류');
         return;
       }
 
@@ -210,12 +201,11 @@ function startMonitoring() {
       if (activeWindow) {
         const currentProgram = activeWindow.owner.name || '';
         
-        // 선택된 프로그램인지 확인 (더 정확한 매칭)
+      
         const isSelectedProgram = selectedPrograms.some(program => {
           const cleanProgram = program.toLowerCase().replace(/\.exe$/i, '').trim();
           const cleanCurrent = currentProgram.toLowerCase().replace(/\.exe$/i, '').trim();
           
-          // 정확히 일치하거나, 한쪽이 다른 쪽을 포함하는 경우
           if (cleanCurrent === cleanProgram) return true;
           if (cleanCurrent.includes(cleanProgram)) return true;
           if (cleanProgram.includes(cleanCurrent)) return true;
@@ -223,15 +213,15 @@ function startMonitoring() {
           return false;
         });
         
-        // 선택된 프로그램 + 활동 중 = 타이머 증가
+        // 활동중이면 타이머 작동
         if (isSelectedProgram && isUserActive) {
           mainWindow.webContents.send('timer-tick', true, currentProgram);
         } else {
-          // 선택된 프로그램이 아니거나 활동이 없으면 타이머 정지
+          // 타이머 정지
           mainWindow.webContents.send('timer-tick', false, currentProgram);
         }
       } else {
-        // 활성 창이 없으면 타이머 정지
+      
         mainWindow.webContents.send('timer-tick', false, '');
       }
     } catch (error) {
@@ -266,7 +256,7 @@ function stopMonitoring() {
     }
   }
   
-  console.log('모니터링 중지!');
+  console.log('모니터링 중지');
 }
 
 // 사용자 활동 감지
@@ -276,7 +266,6 @@ function onUserActivity() {
   const wasActive = isUserActive;
   isUserActive = true;
   
-  // 기존 타임아웃 제거
   if (activityTimeout) {
     clearTimeout(activityTimeout);
     activityTimeout = null;
@@ -285,21 +274,19 @@ function onUserActivity() {
   // 5초 후 비활성화
   activityTimeout = setTimeout(() => {
     isUserActive = false;
-    console.log('사용자 활동 중지 (5초 경과)');
-    // 활동이 중지되었음을 UI에 알림
+    console.log('활동 정지');
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('timer-tick', false, '');
     }
   }, 5000);
   
-  // 비활성 상태에서 활성 상태로 전환된 경우 로그
   if (!wasActive) {
-    console.log('사용자 활동 감지됨 - 타이머 시작');
+    console.log('사용자 활동 감지, 타이머 시작');
   }
 }
 
 app.whenReady().then(async () => {
-  await loadActiveWin(); // active-win 먼저 로드
+  await loadActiveWin(); 
   createWindow();
 
   app.on('activate', function () {
@@ -320,7 +307,7 @@ app.on('before-quit', () => {
 // 시메지 창 생성
 function createRoamingWindow(petEmoji) {
   if (roamingWindow) {
-    return; // 이미 열려있으면 무시
+    return;
   }
 
   const { screen } = require('electron');
@@ -335,15 +322,22 @@ function createRoamingWindow(petEmoji) {
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
-    movable: false,
-    focusable: false,
+    movable: true,
+    focusable: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false
     }
   });
-
-  // HTML 생성
+  const imagePath = path.join(__dirname, '..', 'asset', 'img', 'cat-walk1.png');
+  let imageUrl;
+  if (process.platform === 'win32') {
+    imageUrl = 'file:///' + imagePath.replace(/\\/g, '/');
+  } else {
+    imageUrl = 'file://' + imagePath;
+  }
+  
   const roamingHTML = `
     <!DOCTYPE html>
     <html>
@@ -360,23 +354,115 @@ function createRoamingWindow(petEmoji) {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 60px;
           user-select: none;
-          pointer-events: none;
-          overflow: hidden;
+          pointer-events: auto;
+          overflow: visible;
+          position: relative;
+          -webkit-app-region: drag; 
         }
         #pet {
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+          width: 80px;
+          height: 80px;
+          object-fit: contain;
+          transition: transform 0.1s;
+          cursor: move;
+          -webkit-app-region: no-drag; 
+        }
+        #speech {
+          position: absolute;
+          top: -30px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255, 255, 255, 0.95);
+          color: #333;
+          padding: 5px 10px;
+          border-radius: 10px;
+          font-size: 12px;
+          white-space: nowrap;
+          display: none;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          z-index: 1000;
+          pointer-events: none;
+        }
+        #speech.show {
+          display: block;
+          animation: fadeInOut 2s ease;
+        }
+        @keyframes fadeInOut {
+          0%, 100% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+          20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
       </style>
     </head>
     <body>
-      <div id="pet">${petEmoji || '🐱'}</div>
+      <img id="pet" src="${imageUrl}" alt="Roaming Pet">
+      <div id="speech"></div>
     </body>
     </html>
   `;
 
   roamingWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(roamingHTML));
+
+
+  roamingWindow.webContents.on('did-finish-load', () => {
+    const messages = ['Meow~', 'Keep working hard!', 'You\'re doing great!', 'Cheer up!', 'Good job!'];
+    
+
+    setTimeout(() => {
+      roamingWindow.webContents.executeJavaScript(`
+        (function() {
+          const messages = ${JSON.stringify(messages)};
+          let speechTimeout = null;
+          
+          function showSpeech() {
+            const speech = document.getElementById('speech');
+            if (!speech) {
+              console.log('Speech element 없음음');
+              return;
+            }
+            
+            if (speechTimeout) {
+              clearTimeout(speechTimeout);
+            }
+            
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            speech.textContent = randomMsg;
+            speech.classList.remove('show');
+            
+            speech.offsetHeight;
+            
+            setTimeout(() => {
+              speech.classList.add('show');
+              speechTimeout = setTimeout(() => {
+                speech.classList.remove('show');
+              }, 2000);
+            }, 10);
+          }
+          
+          const pet = document.getElementById('pet');
+          if (pet) {
+            pet.addEventListener('click', function(e) {
+              e.stopPropagation();
+              showSpeech();
+            });
+            pet.addEventListener('mousedown', function(e) {
+              e.stopPropagation();
+            });
+            pet.style.cursor = 'move';
+
+            pet.style.transform = 'scaleX(1)';
+            console.log('Click 이벤트 리스너 추가');
+          } else {
+            console.log('Pet element not found');
+          }
+        })();
+      `).then(() => {
+        console.log('Roaming pet click event script executed');
+      }).catch(err => {
+        console.error('Roaming pet click event error:', err);
+      });
+    }, 100);
+  });
 
   // 초기 위치 설정
   let currentX = Math.random() * (width - 100);
@@ -389,6 +475,7 @@ function createRoamingWindow(petEmoji) {
   roamingWindow.show();
 
   // 이동 로직
+  let lastDirection = 1; // 1: 오른쪽, -1: 왼쪽
   roamingInterval = setInterval(() => {
     if (!roamingWindow || roamingWindow.isDestroyed()) {
       clearInterval(roamingInterval);
@@ -400,13 +487,38 @@ function createRoamingWindow(petEmoji) {
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance < 10) {
-      // 목표 지점 도달, 새로운 목표 설정
       targetX = Math.random() * (width - 100);
       targetY = Math.random() * (height - 100);
     } else {
-      // 목표 지점으로 이동
       currentX += (dx / distance) * speed;
       currentY += (dy / distance) * speed;
+
+      // 이동 방향에 따라 이미지 반전
+      if (Math.abs(dx) > 0.1) { 
+        const newDirection = dx < 0 ? 1 : -1; // 1: 기본값, -1: 반전
+        if (newDirection !== lastDirection) {
+          lastDirection = newDirection;
+          const transformValue = newDirection === -1 ? 'scaleX(-1)' : 'scaleX(1)';
+          roamingWindow.webContents.executeJavaScript(`
+            (function() {
+              const pet = document.getElementById('pet');
+              if (pet) {
+                pet.style.transform = '${transformValue}';
+                pet.style.webkitTransform = '${transformValue}';
+              }
+            })();
+          `).catch(err => {
+            setTimeout(() => {
+              roamingWindow.webContents.executeJavaScript(`
+                const pet = document.getElementById('pet');
+                if (pet) {
+                  pet.style.transform = '${transformValue}';
+                }
+              `).catch(e => console.log('Image flip retry error:', e));
+            }, 50);
+          });
+        }
+      }
 
       // 화면 경계 체크
       if (currentX < 0) currentX = 0;

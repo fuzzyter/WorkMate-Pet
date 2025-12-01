@@ -1,17 +1,56 @@
 {
-  "name": "code",
+  "name": "WorkMate-Pet",
   "version": "1.0.0",
-  "description": "",
+  "description": "Productivity Pet - Track your work time and grow your pet",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "dist": "electron-builder --publish=never",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "productivity",
+    "pet",
+    "timer"
+  ],
   "author": "",
   "license": "ISC",
+  "build": {
+    "appId": "com.workmate.pet",
+    "productName": "WorkMate Pet",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/*",
+      "!dist",
+      "!*.md"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
   "devDependencies": {
-    "electron": "^39.0.0"
+    "electron": "^39.0.0",
+    "electron-builder": "^24.13.3"
   },
   "dependencies": {
     "active-win": "^8.1.0",
