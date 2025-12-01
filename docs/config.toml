@@ -1,0 +1,7 @@
+baseURL = 'https://fuzzyter.github.io/WorkMate-Pet/'
+languageCode = 'en-us'
+title = 'WorkMate Pet'
+
+[params]
+  description = "Your desktop companion that grows with your work"
+  github = "https://github.com/fuzzyter/WorkMate-Pet"
