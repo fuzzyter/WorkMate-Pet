@@ -20,7 +20,7 @@ async function loadActiveWin() {
   try {
     const module = await import('active-win');
     activeWin = module.default;
-    console.log('active-win 로드 성공!');
+    console.log('active-win 로드 성공');
   } catch (error) {
     console.error('active-win 로드 실패:', error);
   }
