@@ -67,4 +67,5 @@
     "electron-store": "^8.1.0",
     "uiohook-napi": "^1.5.4"
   }
+  
 }
