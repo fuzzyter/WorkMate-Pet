@@ -20,7 +20,7 @@ WorkMate Pet is a desktop time tracking app that makes productivity fun. Unlike 
 1. Select which programs you use for work (e.g., VSCode, Photoshop, Chrome)
 2. The app automatically detects when you're working in those programs
 3. Your work time becomes experience points that level up your pet
-4. Get encouragement messages and visual effects as you focus
+4. Get encouragement messages and visual effects as you focus!
 
 ## Tech Stack
 
